@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>手机报价查询</title>
+  <style>
+    :root{
+      --bg:#f5f6f8; --panel:#fff; --panel2:#f0f2f5; --border:#e4e7ec; --text:#1a1d24;
+      --muted:#6b7280; --accent:#2563eb; --accent-weak:#e8efff; --good:#16a34a;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    }
+    @media(prefers-color-scheme:dark){:root{
+      --bg:#0e1116; --panel:#171b22; --panel2:#1e242d; --border:#2a313c; --text:#e8ecf2;
+      --muted:#9aa4b2; --accent:#5b8cff; --accent-weak:#1a2540; --good:#34d17f;
+    }}
+    *{box-sizing:border-box} html,body{margin:0}
+    body{font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.5}
+    .hero{background:linear-gradient(135deg,var(--accent),#7c3aed); color:#fff; padding:36px 20px 30px}
+    .hero-in{max-width:1080px; margin:0 auto}
+    .hero h1{margin:0 0 6px; font-size:26px; font-weight:700; letter-spacing:-.02em}
+    .hero p{margin:0; opacity:.9; font-size:14px}
+    .hero .tag{display:inline-block; margin-top:12px; font-size:12px; background:rgba(255,255,255,.18);
+      padding:4px 12px; border-radius:20px; backdrop-filter:blur(4px)}
+    main{max-width:1080px; margin:-20px auto 40px; padding:0 20px}
+    .controls{background:var(--panel); border:1px solid var(--border); border-radius:14px;
+      padding:16px; box-shadow:0 4px 20px rgba(16,24,40,.06); display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .search{flex:1; min-width:220px; position:relative}
+    .search input{width:100%; font-size:15px; padding:11px 14px 11px 38px; border:1px solid var(--border);
+      border-radius:10px; background:var(--bg); color:var(--text); outline:none; font-family:inherit}
+    .search input:focus{border-color:var(--accent)}
+    .search svg{position:absolute; left:12px; top:12px; opacity:.4}
+    select{font-size:14px; padding:10px 12px; border:1px solid var(--border); border-radius:10px;
+      background:var(--bg); color:var(--text); font-family:inherit; outline:none; cursor:pointer}
+    .brands{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0}
+    .chip{font-size:13px; padding:6px 14px; border-radius:20px; border:1px solid var(--border);
+      background:var(--panel); color:var(--muted); cursor:pointer; user-select:none}
+    .chip:hover{border-color:var(--accent)}
+    .chip.active{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+    .count{color:var(--muted); font-size:13px; margin:4px 0 14px}
+    .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px}
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px;
+      transition:transform .12s, box-shadow .12s; position:relative}
+    .card:hover{transform:translateY(-3px); box-shadow:0 8px 24px rgba(16,24,40,.1)}
+    .card .brand{font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em}
+    .card .model{font-size:17px; font-weight:700; margin:2px 0 8px}
+    .card .specs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+    .card .specs span{font-size:11.5px; background:var(--panel2); color:var(--muted); padding:3px 8px; border-radius:6px}
+    .card .bottom{display:flex; align-items:flex-end; justify-content:space-between}
+    .card .price{font-size:22px; font-weight:800; color:var(--accent)}
+    .card .price small{font-size:12px; font-weight:500; color:var(--muted)}
+    .card .rating{font-size:12px; color:var(--good); font-weight:600}
+    .empty{text-align:center; color:var(--muted); padding:50px}
+    .footer{max-width:1080px; margin:0 auto; padding:20px; color:var(--muted); font-size:12px; text-align:center}
+    .footer code{background:var(--panel2); padding:1px 6px; border-radius:5px}
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-in">
+      <h1>📱 手机报价查询</h1>
+      <p>搜索型号、比价格 · 数据实时来自云端</p>
+      <span class="tag" id="hero-tag">静态托管 · 无需后端服务器</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="controls">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="搜索品牌或型号，如 iPhone、小米、Mate…" autocomplete="off" />
+      </div>
+      <select id="sort">
+        <option value="price-asc">价格从低到高</option>
+        <option value="price-desc">价格从高到低</option>
+        <option value="rating-desc">评分最高</option>
+        <option value="year-desc">最新发布</option>
+      </select>
+    </div>
+
+    <div class="brands" id="brands"></div>
+    <div class="count" id="count">加载中…</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>没有匹配的机型，换个关键词试试。</div>
+  </main>
+
+  <footer class="footer">
+    <span id="updated"></span> ·
+    数据由 <code>web-data-publish</code> 从本地数据库生成为静态 JSON 接口，前端直接 fetch，无后端。
+  </footer>
+
+  <script>
+  var DATA = "data/", all = [], activeBrand = "全部";
+  var $ = function(id){return document.getElementById(id)};
+
+  // 1) 发现数据接口（读 api/index.json 再取第一个 endpoint），2) 拉数据
+  fetch(DATA + "api/index.json")
+    .then(function(r){return r.json()})
+    .then(function(idx){
+      var ep = idx.endpoints[0];
+      return fetch(DATA + ep.path).then(function(r){return r.json()});
+    })
+    .then(function(rows){ all = rows; boot(); })
+    .catch(function(e){ $("count").textContent = "数据加载失败：" + e.message; });
+
+  function boot(){
+    // 品牌筛选
+    var brands = ["全部"].concat(all.map(function(p){return p.brand})
+      .filter(function(v,i,a){return a.indexOf(v)===i}));
+    var bc = $("brands"); bc.innerHTML = "";
+    brands.forEach(function(b){
+      var c = document.createElement("div"); c.className = "chip" + (b==="全部"?" active":"");
+      c.textContent = b; c.onclick = function(){ activeBrand=b;
+        [].forEach.call(bc.children,function(x){x.classList.remove("active")});
+        c.classList.add("active"); render(); };
+      bc.appendChild(c);
+    });
+    $("q").oninput = render; $("sort").onchange = render;
+    // 数据更新时间：取 manifest 的 generated_at（如果有）
+    fetch(DATA + "manifest.json").then(function(r){return r.json()})
+      .then(function(m){ if(m.generated_at) $("updated").textContent = "数据更新于 " + m.generated_at; })
+      .catch(function(){});
+    render();
+  }
+
+  function render(){
+    var q = $("q").value.trim().toLowerCase();
+    var sort = $("sort").value;
+    var list = all.filter(function(p){
+      if(activeBrand!=="全部" && p.brand!==activeBrand) return false;
+      if(!q) return true;
+      return (p.brand+" "+p.model+" "+p.chip).toLowerCase().indexOf(q) >= 0;
+    });
+    list.sort(function(a,b){
+      if(sort==="price-asc") return a.price-b.price;
+      if(sort==="price-desc") return b.price-a.price;
+      if(sort==="rating-desc") return b.rating-a.rating;
+      if(sort==="year-desc") return b.release_year-a.release_year;
+      return 0;
+    });
+    $("count").textContent = "共 " + list.length + " 款";
+    var g = $("grid"); g.innerHTML = "";
+    $("empty").hidden = list.length > 0;
+    list.forEach(function(p){
+      var card = document.createElement("div"); card.className = "card";
+      card.innerHTML =
+        '<div class="brand">'+esc(p.brand)+'</div>'+
+        '<div class="model">'+esc(p.model)+'</div>'+
+        '<div class="specs"><span>'+esc(p.storage)+'</span><span>'+esc(p.color)+'</span>'+
+          '<span>'+esc(p.screen)+'</span><span>'+esc(p.chip)+'</span><span>'+p.release_year+'年</span></div>'+
+        '<div class="bottom"><div class="price"><small>¥</small>'+Number(p.price).toLocaleString()+'</div>'+
+          '<div class="rating">★ '+p.rating+'</div></div>';
+      g.appendChild(card);
+    });
+  }
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "title": "手机报价查询",
+  "generated_at": "2026-07-08T01:51:49",
+  "databases": [
+    "phones.sqlite"
+  ],
+  "tables": [
+    {
+      "db": "phones.sqlite",
+      "name": "phones",
+      "columns": [
+        "id",
+        "brand",
+        "model",
+        "storage",
+        "color",
+        "price",
+        "release_year",
+        "screen",
+        "chip",
+        "rating"
+      ],
+      "rows": 31
+    }
+  ],
+  "docs": null,
+  "web": {
+    "has_custom": true
+  },
+  "mode": "raw",
+  "api": {
+    "index": "api/index.json",
+    "endpoints": [
+      {
+        "table": "phones",
+        "db": "phones.sqlite",
+        "path": "api/phones__phones.json",
+        "rows": 31
+      }
+    ]
+  }
+}

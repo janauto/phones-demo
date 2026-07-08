@@ -1,0 +1,10 @@
+{
+  "endpoints": [
+    {
+      "table": "phones",
+      "db": "phones.sqlite",
+      "path": "api/phones__phones.json",
+      "rows": 31
+    }
+  ]
+}
